@@ -1,0 +1,49 @@
+.home-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .welcome-section, .auth-section {
+    flex: 1;
+  }
+  
+  .header {
+    margin-bottom: 20px;
+  }
+  
+  .auth-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Additional styles for AuthForm if needed */
+  .auth-widget {
+    max-width: 400px; /* Set a max-width for the form */
+    margin: auto; /* Center the form in its container */
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Optional: add a subtle shadow for depth */
+    border-radius: 8px; /* Optional: round the corners */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .home-container {
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    .welcome-section, .auth-section {
+      flex: none;
+      width: 50%;
+      align-items: center;
+    }
+  
+    .auth-widget {
+      margin-top: 20px;
+    }
+  }
