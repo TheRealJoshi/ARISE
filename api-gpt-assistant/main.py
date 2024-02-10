@@ -10,6 +10,8 @@ import fitz  # PyMuPDF
 
 import aiofiles
 
+from fastapi.encoders import jsonable_encoder
+
 import os
 from pathlib import Path
 
@@ -70,18 +72,21 @@ async def upload_file(file: UploadFile = File(...)):
     print(result_text)
 
     # Get the summary
-    summary = await load_assistant(result_text)
+    summary = await load_rap(result_text)
 
-    # remove new line characters
-    summary = summary.replace("\n", " ")
+    # Get the JSON summary
+    important = await load_important(result_text)
+
+    # convert summary into array of strings
+    summary = summary.split("\n")
     
     return summary
 
     return {"filename": file.filename}
 
-# Summarize text
-@app.get("/gptapi/{summary_text}")
-async def load_assistant(summary_text: str):
+# Summarize text into rap
+@app.get("/loadrap/{summary_text}")
+async def load_rap(summary_text: str):
     client = OpenAI()
 
     my_assistants = client.beta.assistants.list(
@@ -126,3 +131,52 @@ async def load_assistant(summary_text: str):
     )
 
     return messages.data[0].content[0].text.value
+
+# get important parts of the after-visit summary
+@app.get("/important/{summary_text}")
+async def load_important(summary_text: str):
+    client = OpenAI()
+
+    my_assistants = client.beta.assistants.list(
+        order="desc",
+        limit="20",
+    )
+
+    #return my_assistants.data
+
+    swift_summary_ai = client.beta.assistants.retrieve(my_assistants.data[0].id)
+
+    # A Thread represents a conversation. 
+    thread = client.beta.threads.create()
+
+    # Create the message
+    message = client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=f"Get the name of the patient, list of medications, list of medical labs, blood pressure, pulse, and weight. List keys as patient, medications, labs, blood, pulse, and weight. Return as JSON format. After-visit summary text: {summary_text}"
+    )
+
+    print(f"Summarize the most important parts of the after-visit summary. After-visit summary text: {summary_text}")
+
+    # Run the assistant
+    run = client.beta.threads.runs.create(
+        thread_id=thread.id,
+        assistant_id=my_assistants.data[0].id
+    )
+
+    # Check the run status
+    while (run.completed_at == None):
+        run = client.beta.threads.runs.retrieve(
+            thread_id=thread.id,
+            run_id=run.id
+        )
+
+        #print(run)
+
+    # Display the Assistant's Response
+    messages = client.beta.threads.messages.list(
+        thread_id=thread.id
+    )
+
+    # jsonify the response
+    return jsonable_encoder(messages.data[0].content[0].text.value)
