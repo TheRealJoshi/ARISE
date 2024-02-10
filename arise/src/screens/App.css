@@ -12,6 +12,15 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+.button-container{
+  display: flex;
+  justify-content: space-between; /* aligns the buttons horizontally */
+  padding: 10px 0; /* adds vertical padding */
+}
+
+.button-container button {
+  margin: 0 10px; /* adds horizontal margin to button elements */
+}
 
 .App-header {
   background-color: #282c34;

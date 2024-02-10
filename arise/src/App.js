@@ -1,24 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import * as React from 'react';
+import Button from '@mui/material/Button';
+import * as ReactDOM from "react-dom/client";
+import Splash from './screens/Splash'
+import Dashboard from './screens/Dashboard'
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import "./index.css";
+
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Splash/>,
+  },
+  {
+    path: "/Dashboard",
+    element: <Dashboard/>,
+  },
+]);
+
+// ReactDOM.createRoot(document.getElementById("root")).render(
+  
+// );
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <React.StrictMode>
+      <RouterProvider router={router} />
+    </React.StrictMode>
   );
 }
 
