@@ -71,6 +71,9 @@ async def upload_file(file: UploadFile = File(...)):
 
     # Get the summary
     summary = await load_assistant(result_text)
+
+    # remove new line characters
+    summary = summary.replace("\n", " ")
     
     return summary
 
