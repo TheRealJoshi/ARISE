@@ -9,23 +9,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 // import sampleData from './data'
 import Avatar from './avatar'
 
-const AudioPlayer = ({ src }) => {
-  // Use the useRef hook to get a reference to the audio element
-  const audioRef = useRef(null);
-
-  // Function to play the audio
-  const playAudio = () => {
-    audioRef.current.play();
-  };
-
-  return (
-    <div>
-      {/* The src prop is used here */}
-      <audio ref={audioRef} src={src} preload="auto" />
-      <button onClick={playAudio}>Play Audio</button>
-    </div>
-  );
-};
 
 
 const sampleData = {
@@ -124,21 +107,46 @@ export default function ClientInformation({user}) {
   const supabase = createClientComponentClient()
   const [loading, setLoading] = useState(true)
   const [fullname, setFullname] = useState(null)
+  const [link, setLink] = useState(null);
   const [counter, setCounter] = useState(0)
   const [username, setUsername] = useState(null)
+  const [play, setPlay] = useState(true);
   const [website, setWebsite] = useState(null)
   const [avatar_url, setAvatarUrl] = useState(null)
 
-  const audioRef = useRef();
+  const AudioPlayer = ({ src }) => {
+    // Use the useRef hook to get a reference to the audio element
+    const audioRef = useRef(null);
+  
+    // Function to play the audio
+    const playAudio = () => {
+      // if (play){
+      //   audioRef.current.play();
+      //   setPlay(true);
+      // } 
+      audioRef.current.play();
+      setPlay(true);
+      // else {
+      //   audioRef.current.pause()
+      //   setPlay(true);
+      // }
+    };
 
-  const play = () => {
-    if (audioRef.current) {
-      audioRef.current.play()
-    } else {
-      // Throw error
+    const stopAudio = () => {
+      audioRef.current.pause()
+      setPlay(true);
     }
-  }
-
+  
+    return (
+      <div>
+        {/* The src prop is used here */}
+        <audio ref={audioRef} src={src} preload="auto" />
+        <Button onClick={playAudio} style={{marginRight: 20}}>Play Audio</Button>
+        <Button onClick={stopAudio}>Pause Audio</Button>
+      </div>
+    );
+  };
+  
 
   const handleClick = () => {
     console.log('Waiting 15 seconds to trigger the request...');
@@ -214,13 +222,13 @@ export default function ClientInformation({user}) {
       <div className="flex flex-col w-full gap-2">
         <div className="flex items-center gap-4">
           <Link className="flex items-center gap-2 font-semibold" href="#">
-            <Package2Icon className="h-6 w-6" />
+            {/* <Package2Icon className="h-6 w-6" /> */}
             <span>ARISE</span>
           </Link>
           <form className="flex-1">
             <div className="relative">
-              <SearchIcon
-                className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+              {/* <SearchIcon
+                className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" /> */}
               <Input
                 className="w-full bg-white shadow-none appearance-none pl-8 md:w-2/3 lg:w-1/3 dark:bg-gray-950"
                 placeholder="Search"
@@ -230,7 +238,9 @@ export default function ClientInformation({user}) {
           <Button
             className="rounded-full border border-gray-200 w-8 h-8 dark:border-gray-800 dark:border-gray-800"
             size="icon"
-            variant="outline">
+            variant="outline"
+            
+            >
             <ChevronRightIcon className="h-4 w-4" />
             <span className="sr-only">Toggle user menu</span>
           </Button>
@@ -255,7 +265,7 @@ export default function ClientInformation({user}) {
           </CardHeader>
           <CardContent className="grid gap-4 text-sm">
             <div className="grid gap-1">
-              {sampleData.summary_info.patient_name && sampleData.summary_info.patient_name.length > 0 ? <div className="font-semibold">{sampleData.summary_info.patient_name}, 21 years old</div> :
+              {sampleData.summary_info.patient_name && sampleData.summary_info.patient_name.length > 0  && counter != 0? <div className="font-semibold">{sampleData.summary_info.patient_name}, 21 years old</div> :
                 <div className="font-semibold">I.E: {sampleData.summary_info.patient_name}</div>
               }
               {/* <div className="text-sm text-gray-500 dark:text-gray-400">21 years, Male</div> */}
@@ -273,21 +283,21 @@ export default function ClientInformation({user}) {
           </CardHeader>
           <CardContent className="flex items-center gap-4">
             <div className="flex flex-col items-center gap-1">
-              {sampleData.summary_info.blood_pressure && sampleData.summary_info.blood_pressure.length > 0 ? <div className="text-3xl font-bold">{sampleData.summary_info.blood_pressure}</div> :
+              {sampleData.summary_info.blood_pressure && sampleData.summary_info.blood_pressure.length > 0 && counter != 0 ? <div className="text-3xl font-bold">{sampleData.summary_info.blood_pressure}</div> :
                 <div className="text-3xl font-bold">I.E: {sampleData.summary_info.blood_pressure}</div>
               }
               <div className="text-xs text-gray-500 dark:text-gray-400">Blood Pressure (mmHg)</div>
             </div>
             <div className="border-r border-gray-200 dark:border-gray-800 h-12" />
             <div className="flex flex-col items-center gap-1">
-              {sampleData.summary_info.blood_pressure && sampleData.summary_info.blood_pressure.length > 0 ? <div className="text-3xl font-bold">{sampleData.summary_info.height}</div>:
+              {sampleData.summary_info.blood_pressure && sampleData.summary_info.blood_pressure.length > 0 && counter != 0  ? <div className="text-3xl font-bold">{sampleData.summary_info.height}</div>:
                 <div className="text-3xl font-bold">I.E: {sampleData.summary_info.height}</div>
               }
               <div className="text-xs text-gray-500 dark:text-gray-400">Height (ft)</div>
             </div>
             <div className="border-r border-gray-200 dark:border-gray-800 h-12" />
             <div className="flex flex-col items-center gap-1">
-              {sampleData.summary_info.weight && sampleData.summary_info.weight.length > 0 ? <div className="text-3xl font-bold">{sampleData.summary_info.weight}</div>:
+              {sampleData.summary_info.weight && sampleData.summary_info.weight.length > 0 && counter != 0 ? <div className="text-3xl font-bold">{sampleData.summary_info.weight}</div>:
                 <div className="text-3xl font-bold">I.E: {sampleData.summary_info.weight}</div>
               }
               <div className="text-xs text-gray-500 dark:text-gray-400">Weight (lbs)</div>
@@ -297,11 +307,111 @@ export default function ClientInformation({user}) {
       </div>
       <Card>
         <CardHeader>
+          <CardTitle>ARISE Insights</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p  style={{paddingBottom: 20}}>
+            Enhance the overall insights section with more detailed analysis and recommendations based on the patient's
+            history and current health status.
+          </p>
+          <div className="grid grid-cols-2 gap-4"  style={{paddingBottom: 20}}>
+            
+            {sampleData.generalAdvice && counter != 0? (<><div>
+              <h3 className="font-semibold">Allergies vs. Medication</h3>
+              <p>
+                Explore the potential interactions between the patient's allergies and current medications to ensure
+                optimal treatment.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold"  style={{paddingBottom: 20}}>Recommendation for Reconsultation</h3>
+              <p>
+                Provide guidance on when it might be beneficial for the patient to schedule a follow-up consultation
+                based on their current health status and treatment plan.
+              </p>
+            </div></>) : (<>
+              <div>
+              <h3 className="font-semibold"  style={{paddingBottom: 20}}>Medication Evaluation</h3>
+              <p>
+                Explore the potential interactions between the patient's allergies and current medications to ensure
+                optimal treatment.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold"  style={{paddingBottom: 20}}>Recommendation Evaluation</h3>
+              <p>
+                Provide guidance on when it might be beneficial for the patient to schedule a follow-up consultation
+                based on their current health status and treatment plan.
+              </p>
+            </div>
+            </>
+            )
+            }
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>ARISE Nutritional Reccomendations</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4">
+            <div>
+              <h1 className="font-semibold">Nutrition Management Schedule</h1>
+              {/* <p>Below is a personalized schedule according to your report along with relevant nutritional information:</p> */}
+              {sampleData.advice ? (<ul className="grid gap-2 text-sm">
+                <li>
+                  <div className="font-semibold">Morning</div>
+                  <div>8:00 AM - Take Metformin - 500mg, 1 tablet</div>
+                  <div>8:30 AM - Breakfast: High-fiber cereal with low-fat milk</div>
+                </li>
+                <li>
+                  <div className="font-semibold">Afternoon</div>
+                  <div>12:00 PM - Lunch: Grilled chicken salad with vinaigrette dressing</div>
+                  <div>3:00 PM - Snack: Greek yogurt with berries</div>
+                </li>
+                <li>
+                  <div className="font-semibold">Evening</div>
+                  <div>6:00 PM - Dinner: Baked salmon with quinoa and steamed vegetables</div>
+                  <div>8:00 PM - Snack: Handful of almonds</div>
+                </li>
+              </ul>): 
+              <ul className="grid gap-2 text-sm">
+              <li>
+                <div className="font-semibold">Morning</div>
+                <div>8:00 AM - </div>
+                <div>8:30 AM - </div>
+              </li>
+              <li>
+                <div className="font-semibold">Afternoon</div>
+                <div>12:00 PM - </div>
+                <div>3:00 PM - </div>
+              </li>
+              <li>
+                <div className="font-semibold">Evening</div>
+                <div>6:00 PM - </div>
+                <div>8:00 PM - </div>
+              </li>
+            </ul>
+              }
+            </div>
+            {/* <div>
+              <h3 className="font-semibold">Nutritional Information</h3>
+              <p>
+                It's important to maintain a balanced diet to manage diabetes effectively. Ensure meals are rich in
+                fiber, lean proteins, and healthy fats.
+              </p>
+            </div> */}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
           <CardTitle>Preferred Pharmacist</CardTitle>
         </CardHeader>
         <CardContent>
           <ul className="list-disc list-inside grid gap-2 text-sm">
-          {sampleData.summary_info.pharmacy && sampleData.summary_info.pharmacy.length > 0 ? <li>{sampleData.summary_info.pharmacy}</li> : 
+          {sampleData.summary_info.pharmacy && sampleData.summary_info.pharmacy.length > 0  && counter != 0 ? <li>{sampleData.summary_info.pharmacy}</li> : 
           <li>I.E: {sampleData.summary_info.pharmacy}</li>
           }
 {/*             
@@ -317,7 +427,7 @@ export default function ClientInformation({user}) {
         <CardContent>
           <ul className="list-disc list-inside grid gap-2 text-sm">
 
-          {sampleData.summary_info.medical_history && sampleData.summary_info.medical_history.length > 0 ? (
+          {sampleData.summary_info.medical_history && sampleData.summary_info.medical_history.length > 0  && counter != 0 ? (
             sampleData.summary_info.medical_history.map((item, index) => (
               <li key={index}>{item}</li> // Adding a key for each list item
             ))
@@ -339,7 +449,7 @@ export default function ClientInformation({user}) {
         </CardHeader>
         <CardContent>
           <ul className="grid gap-2 text-sm">
-          {sampleData.summary_info.vaccinations && sampleData.summary_info.vaccinations.length > 0 ? (
+          {sampleData.summary_info.vaccinations && sampleData.summary_info.vaccinations.length > 0  && counter != 0? (
             sampleData.summary_info.vaccinations.map((item, index) => (
               <li>{item}</li>
             ))
@@ -362,7 +472,7 @@ export default function ClientInformation({user}) {
         <CardContent>
           <ul className="grid gap-2 text-sm">
 
-          {sampleData.summary_info.medications && sampleData.summary_info.medications.length > 0 ? (
+          {sampleData.summary_info.medications && sampleData.summary_info.medications.length > 0  && counter != 0? (
             sampleData.summary_info.medications.map((item, index) => (
               <li>{item}</li>
             ))
@@ -386,7 +496,7 @@ export default function ClientInformation({user}) {
         </CardHeader>
         <CardContent>
           <ul className="grid gap-2 text-sm">
-          {sampleData.summary_info.allergies && sampleData.summary_info.allergies.length > 0 ? (
+          {sampleData.summary_info.allergies && sampleData.summary_info.allergies.length > 0  && counter != 0? (
             sampleData.summary_info.allergies.map((item, index) => (
               <li>{item}</li>
             ))
@@ -407,7 +517,7 @@ export default function ClientInformation({user}) {
         </CardHeader>
         <CardContent>
           <ul className="grid gap-2 text-sm">
-          {sampleData.summary_info.labs && sampleData.summary_info.labs.length > 0 ? (
+          {sampleData.summary_info.labs && sampleData.summary_info.labs.length > 0  && counter != 0? (
             sampleData.summary_info.labs.map((item, index) => (
               <li>{item}</li>
             ))
@@ -428,7 +538,7 @@ export default function ClientInformation({user}) {
         </CardHeader>
         <CardContent>
           <ul className="grid gap-2 text-sm">
-          {sampleData.summary_info.recent_visits && sampleData.summary_info.recent_visits.length > 0 ? (
+          {sampleData.summary_info.recent_visits && sampleData.summary_info.recent_visits.length > 0  && counter != 0? (
             sampleData.summary_info.recent_visits.map((item, index) => (
               <div className="font-semibold">{item}</div>
             ))
@@ -452,7 +562,7 @@ export default function ClientInformation({user}) {
               <div className="grid gap-2">
                 {/* <Button variant="outline">View Medical Records</Button> */}
                 {
-                  avatar_url ? (
+                  avatar_url  && counter != 0 ? (
                     <>
                       <Avatar
                         uid={user.id}
@@ -461,6 +571,7 @@ export default function ClientInformation({user}) {
                         onUpload={(url) => {
                             setAvatarUrl(url);
                             updateProfile({ fullname, username, website, avatar_url: url });
+                            setCounter(counter+1);
                         }}
                       />
                       <div>File Format: PDF</div>
@@ -513,8 +624,12 @@ export default function ClientInformation({user}) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Button>Play Report</Button>
-              <AudioPlayer src="./sungsummary.wav"/>
+              {/* <Button>Play Report</Button> */}
+              {/* http://soundbible.com/mp3/45min_april_rainstorm-mike-koenig.mp3 */}
+              {link ? 
+              <AudioPlayer src={link}/> :
+              <AudioPlayer src="https://audio.jukehost.co.uk/dOnQDVSgpcPpnAovX3PuwnvRoalvdsK9.mp3"/>
+              }
             </div>
             <div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Transcript:</div>
@@ -524,9 +639,20 @@ export default function ClientInformation({user}) {
               </div> */}
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 {/* {sampleData.summary_info.rap_lyrics} */}
-                {sampleData.rap_lyrics.map(item => (
+
+                {sampleData.rap_lyrics && sampleData.rap_lyrics.length > 0 && counter != 0? (
+            sampleData.rap_lyrics.map((item, index) => (
+              <div className="text-sm text-gray-500 dark:text-gray-400">{item}</div>
+            ))
+            ) : (
+              sampleData.rap_lyrics.map((item, index) => (
+                <div className="text-sm text-gray-500 dark:text-gray-400">SAMPLE: {item}</div>
+              ))
+            )
+          }
+                {/* {sampleData.rap_lyrics.map(item => (
                   <div className="text-sm text-gray-500 dark:text-gray-400">{item}</div>
-                ))}
+                ))} */}
               </div>
             </div>
           </div>

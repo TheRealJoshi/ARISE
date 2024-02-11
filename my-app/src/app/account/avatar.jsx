@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Image from 'next/image'
+import { Bold, Italic } from 'lucide-react'
 
 export default function Avatar({ uid, url, size, onUpload }) {
   const supabase = createClientComponentClient()
@@ -70,9 +71,9 @@ export default function Avatar({ uid, url, size, onUpload }) {
       ) : (
         <div className="avatar no-image" style={{ height: size, width: size }} />
       )}
-      <div style={{ width: size }}>
+      <div style={{ width: size, fontSize: 20, fontWeight: Bold, paddingTop: 20, paddingBottom: 80, fontStyle: Italic, color: "lightblue"}}>
         <label className="button primary block" htmlFor="single">
-          {uploading ? 'Uploading ...' : 'Upload'}
+          {uploading ? 'Uploading ...' : 'Upload Here'}
         </label>
         <input
           style={{

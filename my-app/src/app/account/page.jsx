@@ -6,7 +6,6 @@ export default async function Account() {
   const cookieStore = cookies()
   const supabase = createServerComponentClient({ cookies: () => cookieStore })
 
-        <div className="flex items-center gap-4">
   const {
     data: { user },
   } = await supabase.auth.getUser()
