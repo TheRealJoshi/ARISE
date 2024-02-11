@@ -182,3 +182,123 @@ async def load_important(summary_text: str):
     json_obj = json.loads(response.choices[0].message.function_call.arguments)
 
     return json_obj
+
+#-----------------NEW CODE WITH RAP API-----------------#
+
+# Keys for Rap Generator API
+
+# API Keys:
+API_KEY = "pub_obmnecehbnmbtumhbh"
+API_SECRET_KEY = "pk_79c417ea-a9af-4ca5-92f7-07690f38038d"
+uberduck_auth = (API_KEY, API_SECRET_KEY)
+kits_key = "PxUL4Xwm.oiXtmsOAMnWn3FVeP7fVHgP-"
+
+# URLs:
+kits_url = "https://arpeggi.io/api/kits/v1/voice-conversions"
+uberduck_url = "https://api.uberduck.ai/tts/freestyle"
+
+# IDs:
+quackmaster_uuid = "1598e3a2-70af-4bb8-adce-de6cfb24064e"
+drake_id = 52375
+
+# Remove test_lyrics when necessary
+test_lyrics = [
+  [
+    "Yo, rise up, I got the after-visit summary"
+  ]
+]
+
+def generate_rap(
+    lyrics = test_lyrics,
+    voicemodel_uuid = quackmaster_uuid,
+    bpm = 70
+  ):
+
+  output = requests.post(
+      uberduck_url,
+      json=dict(
+          lyrics=lyrics,
+          voicemodel_uuid=voicemodel_uuid,
+          bpm=bpm
+          ),
+      auth=uberduck_auth,
+  ).json()
+  return output
+
+def download_audio(api_path, file_name):
+  if len(file_name) < 0:
+    raise Exception("File name should not be empty")
+
+  # Send a GET request to the API path
+  response = requests.get(api_path)
+
+  # Check if the request was successful
+  if response.status_code == 200:
+    # Save the response to a local file
+    with open(file_name, "wb") as f:
+      f.write(response.content)
+
+    print(f"Audio file has been saved to the local directory as {file_name}.")
+  else:
+    print(f"Try again (Error code: {response.status_code})")
+
+  # Read the file content
+    with open(file_name, "rb") as file:
+        file_content = file.read()
+
+    return FileResponse(file_name)
+
+def convert_voice(audio_path, voice_id=drake_id):
+  headers = {
+      "Authorization": f"Bearer {kits_key}"
+  }
+  files = {
+      "soundFile": open(audio_path, "rb")
+  }
+  data = {
+      "voiceModelId": voice_id
+  }
+  output = requests.post(kits_url, headers=headers, files=files, data=data).json()
+
+  return output['id']
+
+'''
+Probably needs to wait a bit to process before going into this one
+'''
+def pull_rap(conversion_id):
+  url = f"{kits_url}/{str(conversion_id)}"
+
+  headers = {
+      "Authorization": f"Bearer {kits_key}"
+  }
+
+  for t in range(100):
+    sleep(1) # check status every second for 10 seconds.
+    output = requests.get(
+        url,
+        headers=headers
+        ).json()
+    if output['outputFileUrl'] is not None:
+      break
+
+  if "outputFileUrl" not in output:
+    raise Exception("Voice conversion could not be found")
+  
+  print("Made it here!")
+
+  # Final audio is downloaded here!
+  return download_audio(output['outputFileUrl'], "sung_summary.wav")
+
+# API endpoint for generating rap audio
+media_router = APIRouter()
+
+@app.get(
+        path="/api/media-file",
+        response_class=FileResponse,
+)
+def create_rap():
+    rap = generate_rap()
+    download_audio(rap['vocals_url'], "raw_rap.wav")
+    conversion_id = convert_voice(os.path.abspath("raw_rap.wav"))
+    pull_rap(conversion_id)
+    return FileResponse("sung_summary.wav")
