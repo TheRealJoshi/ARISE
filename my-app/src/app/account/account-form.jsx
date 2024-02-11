@@ -55,7 +55,7 @@ export default function AccountForm({ user }) {
         updated_at: new Date().toISOString(),
       })
       if (error) throw error
-      alert('Profile updated!')
+      alert('File successfully uploaded!')
     } catch (error) {
       alert('Error updating the data!')
     } finally {
