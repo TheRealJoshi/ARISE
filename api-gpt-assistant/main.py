@@ -4,11 +4,15 @@ from fastapi import FastAPI, UploadFile, File
 
 from fastapi.responses import JSONResponse
 
-from openai import OpenAI
+import openai
 
 import fitz  # PyMuPDF
 
 import aiofiles
+
+import json
+
+from fastapi.encoders import jsonable_encoder
 
 import os
 from pathlib import Path
@@ -70,59 +74,111 @@ async def upload_file(file: UploadFile = File(...)):
     print(result_text)
 
     # Get the summary
-    summary = await load_assistant(result_text)
+    rap_lyrics = await load_rap(result_text)
 
-    # remove new line characters
-    summary = summary.replace("\n", " ")
+    # Get the JSON summary
+    summary_info = await load_important(result_text)
+
+    # convert summary into array of strings
+    # important = important.split("\n")
     
-    return summary
+    return {
+        "summary_info": summary_info,
+        "rap_lyrics": rap_lyrics
+    }
 
-    return {"filename": file.filename}
 
-# Summarize text
-@app.get("/gptapi/{summary_text}")
-async def load_assistant(summary_text: str):
-    client = OpenAI()
+# Summarize text into rap
+@app.get("/loadrap/")
+async def load_rap(summary_text: str):
 
-    my_assistants = client.beta.assistants.list(
-        order="desc",
-        limit="20",
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "user",
+                "content": f"Summarize the most important parts of the after-visit summary. Make it into a Drake rap. After-visit summary text: {summary_text}"
+            }
+        ]
     )
 
-    #return my_assistants.data
+    # jsonify the response
+    rap_content = response.choices[0].message.content
 
-    swift_summary_ai = client.beta.assistants.retrieve(my_assistants.data[0].id)
+    # convert rap_content into array of strings
+    rap_content = rap_content.split("\n")
 
-    # A Thread represents a conversation. 
-    thread = client.beta.threads.create()
+    return rap_content
 
-    # Create the message
-    message = client.beta.threads.messages.create(
-        thread_id=thread.id,
-        role="user",
-        content=f"Summarize the most important parts of the after-visit summary. Make it into a Drake rap. After-visit summary text: {summary_text}"
+# get important parts of the after-visit summary
+@app.get("/important/{summary_text}")
+async def load_important(summary_text: str):
+
+    functions = [
+        {
+            "name": "show_summary",
+            "description": "Summarize the most important parts of the after-visit summary.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "patient_name": {
+                        "type": "string",
+                        "description": "The name of the patient."
+                    },
+                    "blood_pressure": {
+                        "type": "string",
+                        "description": "The blood pressure of the patient."
+                    },
+                    "height": {
+                        "type": "string",
+                        "description": "The height of the patient."
+                    },
+                    "weight": {
+                        "type": "string",
+                        "description": "The weight of the patient."
+                    },
+                    "vaccinations": {
+                        "type": "array",
+                        "description": "The vaccinations of the patient.",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "medications": {
+                        "type": "array",
+                        "description": "The medications of the patient.",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "labs": {
+                        "type": "array",
+                        "description": "The labs of the patient.",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                }
+            }
+        }
+    ]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are a doctor. You are summarizing the most important parts of the after-visit summary."
+            },
+            {
+                "role": "user",
+                "content": f"{summary_text}"
+            }
+        ],
+        functions=functions
     )
 
-    print(f"Summarize the most important parts of the after-visit summary. After-visit summary text: {summary_text}")
+    # jsonify the response
+    json_obj = json.loads(response.choices[0].message.function_call.arguments)
 
-    # Run the assistant
-    run = client.beta.threads.runs.create(
-        thread_id=thread.id,
-        assistant_id=my_assistants.data[0].id
-    )
-
-    # Check the run status
-    while (run.completed_at == None):
-        run = client.beta.threads.runs.retrieve(
-            thread_id=thread.id,
-            run_id=run.id
-        )
-
-        #print(run)
-
-    # Display the Assistant's Response
-    messages = client.beta.threads.messages.list(
-        thread_id=thread.id
-    )
-
-    return messages.data[0].content[0].text.value
+    return json_obj
