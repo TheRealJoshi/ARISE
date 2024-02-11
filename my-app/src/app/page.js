@@ -311,7 +311,7 @@ export default function Home() {
         <p>
           Engaging, easy-to-understand health data interpretation at your fingertips.
         </p>
-        <AuthForm />
+        {needsToRegister ? <AuthForm /> : <RegisterForm/>}
       </div>
     </div>
   );
