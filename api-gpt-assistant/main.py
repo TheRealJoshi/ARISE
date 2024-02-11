@@ -201,7 +201,58 @@ async def load_important(summary_text: str):
                         "items": {
                             "type": "string"
                         }
+                    },
+                    "arise_insights": {
+                        "type": "array",
+                        "description": "Enhance the overall insights section with more detailed analysis and recommendations based on the patient's history and current health status.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "medication_evaluation": {
+                                    "type": "string",
+                                    "description": "Explore the potential interactions between the patient's allergies and current medications to ensure optimal treatment."
+                                },
+                                "recommendation_eval": {
+                                    "type": "string",
+                                    "description": "Provide guidance on when it might be beneficial for the patient to schedule a follow-up consultation based on their current health status and treatment plan."
+                                }
+                            }
+                        }
+                    },
+                    "nutritional_reccs": {
+                        "type": "array",
+                        "description": "Provide personalized nutritional recommendations based on the patient's health status and dietary preferences.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "8am": {
+                                    "type": "string",
+                                    "description": "Recommendations for the patient's breakfast."
+                                },
+                                "830am": {
+                                    "type": "string",
+                                    "description": "Recommendations for the patient's mid-morning snack."
+                                },
+                                "12pm": {
+                                    "type": "string",
+                                    "description": "Recommendations for the patient's lunch."
+                                },
+                                "3pm": {
+                                    "type": "string",
+                                    "description": "Recommendations for the patient's afternoon snack."
+                                },
+                                "6pm": {
+                                    "type": "string",
+                                    "description": "Recommendations for the patient's dinner."
+                                },
+                                "8pm": {
+                                    "type": "string",
+                                    "description": "Recommendations for the patient's evening snack."
+                                }
+                            }
+                        }
                     }
+                    
                 }
             }
         }
