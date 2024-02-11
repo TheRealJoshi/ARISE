@@ -239,7 +239,7 @@ export default function ClientInformation({user}) {
             className="rounded-full border border-gray-200 w-8 h-8 dark:border-gray-800 dark:border-gray-800"
             size="icon"
             variant="outline"
-            
+            action="/auth/signout" method="post"
             >
             <ChevronRightIcon className="h-4 w-4" />
             <span className="sr-only">Toggle user menu</span>
