@@ -1,8 +1,9 @@
+from time import sleep
 from typing import Union
 
-from fastapi import FastAPI, UploadFile, File
+from fastapi import APIRouter, FastAPI, UploadFile, File
 
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 import openai
 
@@ -17,7 +18,16 @@ from fastapi.encoders import jsonable_encoder
 import os
 from pathlib import Path
 
+import requests
+
 app = FastAPI()
+
+# Remove test_lyrics when necessary
+test_lyrics = [
+  [
+    "Yo, rise up, I got the after-visit summary"
+  ]
+]
 
 
 @app.get("/")
@@ -81,6 +91,15 @@ async def upload_file(file: UploadFile = File(...)):
 
     # convert summary into array of strings
     # important = important.split("\n")
+
+    # set test_lyrics to the rap_lyrics
+    global test_lyrics
+
+    test_lyrics = rap_lyrics
+
+    # Inside your upload_file function after modifying test_lyrics
+    with open('test_lyrics.json', 'w') as f:
+        json.dump(test_lyrics, f)
     
     return {
         "summary_info": summary_info,
@@ -158,6 +177,31 @@ async def load_important(summary_text: str):
                             "type": "string"
                         }
                     },
+                    "medical_history": {
+                        "type": "array",
+                        "description": "The medical history of the patient.",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "allergies": {
+                        "type": "array",
+                        "description": "The allergies of the patient.",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "pharmacy": {
+                        "type": "string",
+                        "description": "The pharmacy of the patient."
+                    },
+                    "recent_visits": {
+                        "type": "array",
+                        "description": "The recent visits of the patient.",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         }
@@ -191,7 +235,8 @@ async def load_important(summary_text: str):
 API_KEY = "pub_obmnecehbnmbtumhbh"
 API_SECRET_KEY = "pk_79c417ea-a9af-4ca5-92f7-07690f38038d"
 uberduck_auth = (API_KEY, API_SECRET_KEY)
-kits_key = "PxUL4Xwm.oiXtmsOAMnWn3FVeP7fVHgP-"
+#TODO:
+kits_key = "wqQ51xrE.CrJwE6OhlKa7w6k7q4j_tgmV"
 
 # URLs:
 kits_url = "https://arpeggi.io/api/kits/v1/voice-conversions"
@@ -201,18 +246,20 @@ uberduck_url = "https://api.uberduck.ai/tts/freestyle"
 quackmaster_uuid = "1598e3a2-70af-4bb8-adce-de6cfb24064e"
 drake_id = 52375
 
-# Remove test_lyrics when necessary
-test_lyrics = [
-  [
-    "Yo, rise up, I got the after-visit summary"
-  ]
-]
-
-def generate_rap(
+async def generate_rap(
     lyrics = test_lyrics,
     voicemodel_uuid = quackmaster_uuid,
     bpm = 70
   ):
+
+  try:
+    with open('test_lyrics.json', 'r') as f:
+        lyrics = [json.load(f)]
+  except FileNotFoundError:
+        lyrics = [["Yo, rise up, I got the after-visit summary"]]
+
+  print("Showcasing lyrics!")
+  print(lyrics)
 
   output = requests.post(
       uberduck_url,
@@ -223,9 +270,11 @@ def generate_rap(
           ),
       auth=uberduck_auth,
   ).json()
+  
+  
   return output
 
-def download_audio(api_path, file_name):
+async def download_audio(api_path, file_name):
   if len(file_name) < 0:
     raise Exception("File name should not be empty")
 
@@ -248,7 +297,7 @@ def download_audio(api_path, file_name):
 
     return FileResponse(file_name)
 
-def convert_voice(audio_path, voice_id=drake_id):
+async def convert_voice(audio_path, voice_id=drake_id):
   headers = {
       "Authorization": f"Bearer {kits_key}"
   }
@@ -265,7 +314,7 @@ def convert_voice(audio_path, voice_id=drake_id):
 '''
 Probably needs to wait a bit to process before going into this one
 '''
-def pull_rap(conversion_id):
+async def pull_rap(conversion_id):
   url = f"{kits_url}/{str(conversion_id)}"
 
   headers = {
@@ -284,8 +333,6 @@ def pull_rap(conversion_id):
   if "outputFileUrl" not in output:
     raise Exception("Voice conversion could not be found")
   
-  print("Made it here!")
-
   # Final audio is downloaded here!
   return download_audio(output['outputFileUrl'], "sung_summary.wav")
 
@@ -296,9 +343,16 @@ media_router = APIRouter()
         path="/api/media-file",
         response_class=FileResponse,
 )
-def create_rap():
-    rap = generate_rap()
-    download_audio(rap['vocals_url'], "raw_rap.wav")
-    conversion_id = convert_voice(os.path.abspath("raw_rap.wav"))
-    pull_rap(conversion_id)
+async def create_rap():
+    rap = await generate_rap()
+    await download_audio(rap['vocals_url'], "raw_rap.wav")
+    conversion_id = await convert_voice(os.path.abspath("raw_rap.wav"))
+    await pull_rap(conversion_id)
+    return FileResponse("sung_summary.wav")
+
+@app.get(
+    path="/api/media-test/",
+    response_class=FileResponse,
+)
+def test_rap():
     return FileResponse("sung_summary.wav")
