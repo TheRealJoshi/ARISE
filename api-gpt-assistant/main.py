@@ -13,6 +13,11 @@ import aiofiles
 
 import json
 
+import subprocess
+
+import subprocess
+from fastapi.concurrency import run_in_threadpool
+
 from fastapi.encoders import jsonable_encoder
 
 import os
@@ -202,57 +207,6 @@ async def load_important(summary_text: str):
                             "type": "string"
                         }
                     },
-                    "arise_insights": {
-                        "type": "array",
-                        "description": "Enhance the overall insights section with more detailed analysis and recommendations based on the patient's history and current health status.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "medication_evaluation": {
-                                    "type": "string",
-                                    "description": "Explore the potential interactions between the patient's allergies and current medications to ensure optimal treatment."
-                                },
-                                "recommendation_eval": {
-                                    "type": "string",
-                                    "description": "Provide guidance on when it might be beneficial for the patient to schedule a follow-up consultation based on their current health status and treatment plan."
-                                }
-                            }
-                        }
-                    },
-                    "nutritional_reccs": {
-                        "type": "array",
-                        "description": "Provide personalized nutritional recommendations based on the patient's health status and dietary preferences.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "8am": {
-                                    "type": "string",
-                                    "description": "Recommendations for the patient's breakfast."
-                                },
-                                "830am": {
-                                    "type": "string",
-                                    "description": "Recommendations for the patient's mid-morning snack."
-                                },
-                                "12pm": {
-                                    "type": "string",
-                                    "description": "Recommendations for the patient's lunch."
-                                },
-                                "3pm": {
-                                    "type": "string",
-                                    "description": "Recommendations for the patient's afternoon snack."
-                                },
-                                "6pm": {
-                                    "type": "string",
-                                    "description": "Recommendations for the patient's dinner."
-                                },
-                                "8pm": {
-                                    "type": "string",
-                                    "description": "Recommendations for the patient's evening snack."
-                                }
-                            }
-                        }
-                    }
-                    
                 }
             }
         }
@@ -287,7 +241,7 @@ API_KEY = "pub_obmnecehbnmbtumhbh"
 API_SECRET_KEY = "pk_79c417ea-a9af-4ca5-92f7-07690f38038d"
 uberduck_auth = (API_KEY, API_SECRET_KEY)
 #TODO:
-kits_key = "wqQ51xrE.CrJwE6OhlKa7w6k7q4j_tgmV"
+kits_key = "thdcSf9f.rya1Nun3vEDQStE7fM_Zwldg"
 
 # URLs:
 kits_url = "https://arpeggi.io/api/kits/v1/voice-conversions"
@@ -399,11 +353,26 @@ async def create_rap():
     await download_audio(rap['vocals_url'], "raw_rap.wav")
     conversion_id = await convert_voice(os.path.abspath("raw_rap.wav"))
     await pull_rap(conversion_id)
-    return FileResponse("sung_summary.wav")
+
+    # delete the sung_summary.mp3 file if it exists
+    if os.path.exists("sung_summary.mp3"):
+        os.remove("sung_summary.mp3")
+    
+    # Convert wav to mp3 using subprocess.run
+    subprocess.run(["ffmpeg", "-i", "sung_summary.wav", "sung_summary.mp3"])
+
+    return FileResponse("sung_summary.mp3")
 
 @app.get(
     path="/api/media-test/",
     response_class=FileResponse,
 )
-def test_rap():
-    return FileResponse("sung_summary.wav")
+async def test_rap():
+    # delete the sung_summary.mp3 file if it exists
+    if os.path.exists("sung_summary.mp3"):
+        os.remove("sung_summary.mp3")
+    
+    # Convert wav to mp3 using subprocess.run
+    subprocess.run(["ffmpeg", "-i", "sung_summary.wav", "sung_summary.mp3"])
+
+    return FileResponse("sung_summary.mp3")
