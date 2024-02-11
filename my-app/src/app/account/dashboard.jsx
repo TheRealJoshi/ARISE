@@ -9,23 +9,6 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 // import sampleData from './data'
 import Avatar from './avatar'
 
-const AudioPlayer = ({ src }) => {
-  // Use the useRef hook to get a reference to the audio element
-  const audioRef = useRef(null);
-
-  // Function to play the audio
-  const playAudio = () => {
-    audioRef.current.play();
-  };
-
-  return (
-    <div>
-      {/* The src prop is used here */}
-      <audio ref={audioRef} src={src} preload="auto" />
-      <button onClick={playAudio}>Play Audio</button>
-    </div>
-  );
-};
 
 
 const sampleData = {
@@ -124,21 +107,46 @@ export default function ClientInformation({user}) {
   const supabase = createClientComponentClient()
   const [loading, setLoading] = useState(true)
   const [fullname, setFullname] = useState(null)
+  const [link, setLink] = useState(null);
   const [counter, setCounter] = useState(0)
   const [username, setUsername] = useState(null)
+  const [play, setPlay] = useState(true);
   const [website, setWebsite] = useState(null)
   const [avatar_url, setAvatarUrl] = useState(null)
 
-  const audioRef = useRef();
+  const AudioPlayer = ({ src }) => {
+    // Use the useRef hook to get a reference to the audio element
+    const audioRef = useRef(null);
+  
+    // Function to play the audio
+    const playAudio = () => {
+      // if (play){
+      //   audioRef.current.play();
+      //   setPlay(true);
+      // } 
+      audioRef.current.play();
+      setPlay(true);
+      // else {
+      //   audioRef.current.pause()
+      //   setPlay(true);
+      // }
+    };
 
-  const play = () => {
-    if (audioRef.current) {
-      audioRef.current.play()
-    } else {
-      // Throw error
+    const stopAudio = () => {
+      audioRef.current.pause()
+      setPlay(true);
     }
-  }
-
+  
+    return (
+      <div>
+        {/* The src prop is used here */}
+        <audio ref={audioRef} src={src} preload="auto" />
+        <Button onClick={playAudio} style={{marginRight: 20}}>Play Audio</Button>
+        <Button onClick={stopAudio}>Pause Audio</Button>
+      </div>
+    );
+  };
+  
 
   const handleClick = () => {
     console.log('Waiting 15 seconds to trigger the request...');
@@ -616,10 +624,12 @@ export default function ClientInformation({user}) {
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Button onClick={() => AudioPlayer("https://audio.jukehost.co.uk/dOnQDVSgpcPpnAovX3PuwnvRoalvdsK9.mp3")}>
-                Play Report</Button>
+              {/* <Button>Play Report</Button> */}
               {/* http://soundbible.com/mp3/45min_april_rainstorm-mike-koenig.mp3 */}
-              {/* <AudioPlayer src="https://audio.jukehost.co.uk/dOnQDVSgpcPpnAovX3PuwnvRoalvdsK9.mp3"/> */}
+              {link ? 
+              <AudioPlayer src={link}/> :
+              <AudioPlayer src="https://audio.jukehost.co.uk/dOnQDVSgpcPpnAovX3PuwnvRoalvdsK9.mp3"/>
+              }
             </div>
             <div>
               <div className="text-sm text-gray-500 dark:text-gray-400">Transcript:</div>
