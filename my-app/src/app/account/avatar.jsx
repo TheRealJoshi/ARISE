@@ -55,14 +55,18 @@ export default function Avatar({ uid, url, size, onUpload }) {
   return (
     <div>
       {avatarUrl ? (
-        <Image
-          width={size}
-          height={size}
-          src={avatarUrl}
-          alt="Avatar"
-          className="avatar image"
-          style={{ height: size, width: size }}
-        />
+        <div>
+            {/* <h2>View Uploaded PDF</h2> */}
+            <iframe src={avatarUrl} width={size*3} height={size*3} style={{alignItems: 'center', alignContent: 'center'}}></iframe>
+        </div>
+        // <Image
+        //   
+        //   
+        //   src={avatarUrl}
+        //   alt="Avatar"
+        //   className="avatar image"
+        //   style={{ height: size, width: size }}
+        // />
       ) : (
         <div className="avatar no-image" style={{ height: size, width: size }} />
       )}
@@ -75,9 +79,11 @@ export default function Avatar({ uid, url, size, onUpload }) {
             visibility: 'hidden',
             position: 'absolute',
           }}
-          type="file"
+        //   type="file"
+          accept=".pdf" 
+          type="file" 
           id="single"
-          accept="image/*"
+        //   accept="image/*"
           onChange={uploadAvatar}
           disabled={uploading}
         />
