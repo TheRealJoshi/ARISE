@@ -74,20 +74,22 @@ async def upload_file(file: UploadFile = File(...)):
     print(result_text)
 
     # Get the summary
-    # summary = await load_rap(result_text)
+    rap_lyrics = await load_rap(result_text)
 
     # Get the JSON summary
-    important = await load_important(result_text)
+    summary_info = await load_important(result_text)
 
     # convert summary into array of strings
     # important = important.split("\n")
     
-    return important
+    return {
+        "summary_info": summary_info,
+        "rap_lyrics": rap_lyrics
+    }
 
-    return {"filename": file.filename}
 
 # Summarize text into rap
-@app.get("/loadrap/{summary_text}")
+@app.get("/loadrap/")
 async def load_rap(summary_text: str):
 
     response = openai.ChatCompletion.create(
@@ -101,13 +103,12 @@ async def load_rap(summary_text: str):
     )
 
     # jsonify the response
-    return response.choices[0].message.content[0].text.value
+    rap_content = response.choices[0].message.content
 
-    
+    # convert rap_content into array of strings
+    rap_content = rap_content.split("\n")
 
-    print(f"Summarize the most important parts of the after-visit summary. After-visit summary text: {summary_text}")
-
-    return messages.data[0].content[0].text.value
+    return rap_content
 
 # get important parts of the after-visit summary
 @app.get("/important/{summary_text}")
@@ -137,19 +138,15 @@ async def load_important(summary_text: str):
                         "description": "The weight of the patient."
                     },
                     "vaccinations": {
-                        "type": "string",
-                        "description": "The vaccinations of the patient."
-                    },
-                    "medications": {
                         "type": "array",
-                        "description": "The medications of the patient.",
+                        "description": "The vaccinations of the patient.",
                         "items": {
                             "type": "string"
                         }
                     },
-                    "allergies": {
+                    "medications": {
                         "type": "array",
-                        "description": "The allergies of the patient.",
+                        "description": "The medications of the patient.",
                         "items": {
                             "type": "string"
                         }
